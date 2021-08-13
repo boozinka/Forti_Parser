@@ -670,8 +670,17 @@ def capture_config(fw_config_file):
 
         
 def parse():
-    """ Locates file and call functions to read and parse the config file """
+    """ Used to initialise 'main' when the module is imported """
 
+    global config_dict
+    
+    config_dict = main()
+    return config_dict
+
+    
+def main():
+    """ Main Program, used when the module is run directly as a script """
+    
     # Read and process the firewall config file into a list
     file_path = set_working_dir()
     fw_config_message = ("\nEnter the full filename containing the firewall"
@@ -683,13 +692,10 @@ def parse():
 
     return config_dict
 
-    
-def main():
-    """ Main Program """
 
-    config_dict = parse()
+config_dict = None
 
 
 if __name__ == "__main__":
-    main()
+    config_dict = main()
 
