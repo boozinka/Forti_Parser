@@ -62,12 +62,14 @@ def check_prefix(my_prefix, config_dict):
         for grp_name, grp_members in attributes['srcaddr']['addrgrps'].items():
             for member_name, member_ip in grp_members.items():
                 if my_prefix.subnet_of(ipaddress.IPv4Network(member_ip)):
-                    tmp_addrgrp_dict.update({grp_name: {member_name: member_ip}})
+                    tmp_addrgrp_dict.update({grp_name:
+                                            {member_name: member_ip}})
 
         # Update main dictionary after each policy iteration
         permit_dict.update({pol_id: {
                             'addr': tmp_addr_dict,
-                            'addrgrp': tmp_addrgrp_dict}
+                            'addrgrp': tmp_addrgrp_dict,
+                            'action': attributes['pol_action']}
                             })
         
         # Clear each temporary dictionary after each policy iteration 
@@ -94,30 +96,33 @@ def write_output(output_dict):
         my_prefix = output_dict.pop('my_prefix')
         
         # Write header
-        title = (f'The following is a list of policies where {my_prefix} is ' 
+        title = (f'The following is a list of policies where {my_prefix} is '
                   'encompassed in the source addresses')
         header = [title, '\n\n', 'policy id', ',', 'address group', ',',
-                  'address object', ',', 'ip address', '\n']
+                  'address object', ',', 'ip address', ',', 'policy action',
+                  '\n']
         file.writelines(header)
 
         # Loop through 'output_dict' extracting and writing data
         for pol_id, attributes in output_dict.items():
 
-            # Assign the ippools and vips dictionaries to new varibles
+            # Assign the address, address group dictionaries and action
+            # to new varibles
             addr_dict = attributes['addr']
             addrgrp_dict = attributes['addrgrp']
+            action = attributes['action']
 
             # Write the address mappings out
             for addr_name, addr in addr_dict.items():
-                addr_line = [pol_id, ',', '', ',', addr_name, ',', addr, '\n']
+                addr_line = [pol_id, ',', '', ',', addr_name, ',', addr, ',',
+                             action, '\n']
                 file.writelines(addr_line)
 
             # Write the address group object mappings out
             for addrgrp_name, members in addrgrp_dict.items():
-                #addrgrp_line = [pol_id, ',', label, ',', 'addrgrp', ',', addrgrp_name, '\n']
-                #file.writelines(addrgrp_line)
                 for name, ip_addr in members.items():
-                    member_line = [pol_id, ',', addrgrp_name, ',', name, ',', ip_addr, '\n']
+                    member_line = [pol_id, ',', addrgrp_name, ',', name, ',',
+                                   ip_addr, ',', action, '\n']
                     file.writelines(member_line)
 
 
@@ -126,13 +131,13 @@ def main():
 
     # Call Fortigate Parser
     config_dict = forti_parser.parse()
+    print(len(config_dict))
 
     # Call function for user to input a valid IP prefix
     my_prefix = get_prefix()
 
     # Call function to check the prefix against each policy
     output_dict = check_prefix(my_prefix, config_dict)
-    #pprint(output_dict)
 
     # Call function to write the output to a .csv file
     write_output(output_dict)
