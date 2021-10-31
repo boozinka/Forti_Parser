@@ -23,3 +23,6 @@ Using the returned configuration data structure from the forti_parser.py this sc
 
 - This decommissioning tool is only affective where the ADOM only encompasses a single firewall cluster.
 
+#### object_resolver.py
+
+This program imports one or more Fortigate firewall configurations as a complex data structure. It then imports a list of object names to resolve and write to a .csv file.
